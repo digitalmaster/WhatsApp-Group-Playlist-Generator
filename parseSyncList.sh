@@ -2,25 +2,38 @@
 
 # This script parses a WhatsApp group export txt file and syncs spotify tracks to a playlist
 
+parseCodeFromRedirectURL(){
+    local URL=$1
+    local CODE=''
+
+    # Extract the code from the URL
+    CODE=$(echo "$URL" | grep -o 'code=[^&]*' | cut -d'=' -f2)
+
+    echo "$CODE"
+}
+
 ACCESS_TOKEN='';
 authorize(){
     echo "Authorizing Spotify..."
 
     local ACCESS_TOKEN_RESPONSE='';
     local ACCESS_ERROR='';
+    local CODE='';
 
     # Open the Spotify authorization URL
     open "https://accounts.spotify.com/authorize?client_id=$SPOTIFY_CLIENT_ID&response_type=code&redirect_uri=$SPOTIFY_REDIRECT_URI&scope=playlist-modify-private%20playlist-modify-public"
 
-    # Get the code from the redirect URI
-    echo "Enter the code from the redirect URI:"
-    read -r CODE
+    # Get the code from the redirect URL
+    echo "Enter the redirect URL:"
+    read -r CODE_INPUT
+
+    CODE=$(parseCodeFromRedirectURL "$CODE_INPUT")
+    echo "Code outside: $CODE"
 
     ACCESS_TOKEN_RESPONSE=$(curl -s -X POST "https://accounts.spotify.com/api/token" \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -H "Authorization: Basic $(echo -n "$SPOTIFY_CLIENT_ID:$SPOTIFY_CLIENT_SECRET" | base64)" \
         -d "grant_type=authorization_code&code=$CODE&redirect_uri=$SPOTIFY_REDIRECT_URI")
-    echo "Access token response: $ACCESS_TOKEN_RESPONSE"
 
     # Get the access token
     ACCESS_TOKEN=$(echo $ACCESS_TOKEN_RESPONSE | jq -r '.access_token')

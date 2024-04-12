@@ -16,7 +16,7 @@ This project contains a script to parse a WhatsApp group export txt file and syn
     - `export SPOTIFY_PLAYLIST_ID=<your_playlist_id>`
     - `export SPOTIFY_REDIRECT_URI=<your_redirect_uri>`
 4. Run the `parseSyncList.sh` script.
-5. Will redirect you to a browser to authenticate with Spotify. After authenticating, you will be redirected to a page that will not load. Copy the `code` value from the URL and paste it into the terminal.
+5. Will redirect you to a browser to authenticate with Spotify. After authenticating, you will be redirected to a page that will not load. Copy the entire URL paste it into the terminal.
 
 ## Spotify API Documentation
 
