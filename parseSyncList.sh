@@ -65,6 +65,7 @@ loadList(){
     local TRACK_DUPLICATES=''
     # Parse the WhatsApp group export txt file and extract the spotify track links
     TRACK_LIST=$(grep -o 'https://open.spotify.com/track/[a-zA-Z0-9]*' < _chat.txt)
+
     TRACK_DUPLICATES=$(echo "$TRACK_LIST" | sort | uniq -d)
 
     # Print duplicates
@@ -73,8 +74,8 @@ loadList(){
         echo "Found $(echo "$TRACK_DUPLICATES" | wc -l | tr -d '[:space:]') duplicate tracks"
     fi
 
-    # Remove duplicates
-    TRACK_LIST=$(echo "$TRACK_LIST" | sort -u)
+    # Remove duplicates while maintaining order
+    TRACK_LIST=$(echo "$TRACK_LIST" | awk '!seen[$0]++')
 
     # Print number of tracks found
     echo "Found $(echo "$TRACK_LIST" | wc -l | tr -d '[:space:]') tracks"
