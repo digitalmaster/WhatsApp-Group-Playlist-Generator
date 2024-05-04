@@ -28,7 +28,6 @@ authorize(){
     read -r CODE_INPUT
 
     CODE=$(parseCodeFromRedirectURL "$CODE_INPUT")
-    echo "Code outside: $CODE"
 
     ACCESS_TOKEN_RESPONSE=$(curl -s -X POST "https://accounts.spotify.com/api/token" \
         -H "Content-Type: application/x-www-form-urlencoded" \
@@ -50,12 +49,19 @@ authorize(){
 
 removeTracksAlreadyInPlaylist(){
     local TRACK_LIST=$1
+    local PATTERN=''
+    local FILTERED_TRACK_LIST=''
 
     # Convert existing track IDs into a grep-friendly pattern
-    local PATTERN=$(echo "$EXISTING_TRACKS" | sed 's/ /\\|/g')
+    PATTERN=$(echo "$EXISTING_TRACKS" | sed 's/ /\\|/g')
+
+    if [ -z "$PATTERN" ]; then
+        echo "$TRACK_LIST"
+        return
+    fi
 
     # Filter TRACK_LIST by removing entries matching the pattern
-    local FILTERED_TRACK_LIST=$(echo "$TRACK_LIST" | grep -v "$PATTERN")
+    FILTERED_TRACK_LIST=$(echo "$TRACK_LIST" | grep -v "$PATTERN")
 
     echo "$FILTERED_TRACK_LIST"
 }
@@ -121,6 +127,14 @@ fetchExistingTracks(){
         echo "🚫 Failed to fetch existing tracks 😢"
         exit 1
     fi
+
+    # Total number of tracks in the playlist
+    EXISTING_TRACKS_COUNT=$(echo "$FETCH_RESPONSE" | jq -r '.total')
+    if [ "$EXISTING_TRACKS_COUNT" -eq 0 ]; then
+        echo "✅ Playlist is empty 🎵"
+        return 0
+    fi
+
     EXISTING_TRACKS=$(echo "$FETCH_RESPONSE" | jq -r '.items[].track.id');
     NEXT_URL=$(echo "$FETCH_RESPONSE" | jq -r '.next')
 
